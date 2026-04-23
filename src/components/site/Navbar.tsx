@@ -71,6 +71,28 @@ export const Navbar = ({ transparentOnTop = false }: { transparentOnTop?: boolea
 
         <div className="hidden md:flex items-center gap-2">
           <LangSwitcher transparent={transparent} />
+          {isStaff && (
+            <Link
+              to="/dashboard"
+              className={cn(
+                "inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-smooth",
+                transparent ? "text-white bg-white/15 hover:bg-white/25" : "text-primary bg-leaf hover:opacity-90"
+              )}
+            >
+              <Shield className="h-4 w-4" /> {t("nav.recruiterSpace")}
+            </Link>
+          )}
+          {isAdmin && (
+            <Link
+              to="/admin/users"
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-smooth",
+                transparent ? "text-white/85 hover:bg-white/10" : "text-foreground/75 hover:bg-secondary"
+              )}
+            >
+              {t("nav.adminUsers")}
+            </Link>
+          )}
           {user ? (
             <>
               <Link
