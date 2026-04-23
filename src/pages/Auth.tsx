@@ -27,7 +27,11 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
 
-  const redirectTo = (location.state as { from?: string })?.from || "/opportunities";
+  const search = new URLSearchParams(location.search);
+  const redirectTo =
+    search.get("redirect") ||
+    (location.state as { from?: string })?.from ||
+    "/opportunities";
 
   if (!loading && user) return <Navigate to={redirectTo} replace />;
 

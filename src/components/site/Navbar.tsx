@@ -1,9 +1,10 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { Leaf, LogOut, Menu, User, X } from "lucide-react";
+import { Leaf, LogOut, Menu, Shield, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/hooks/useUserRole";
 import { LangSwitcher } from "./LangSwitcher";
 
 export const Navbar = ({ transparentOnTop = false }: { transparentOnTop?: boolean }) => {
@@ -12,12 +13,12 @@ export const Navbar = ({ transparentOnTop = false }: { transparentOnTop?: boolea
   const { pathname } = useLocation();
   const { t } = useTranslation();
   const { user, signOut } = useAuth();
+  const { isStaff, isAdmin } = useUserRole();
 
   const links = [
     { to: "/", label: t("nav.home") },
     { to: "/opportunities", label: t("nav.opportunities") },
     { to: "/organization", label: t("nav.park") },
-    { to: "/dashboard", label: t("nav.dashboard") },
   ];
 
   useEffect(() => {
@@ -70,6 +71,28 @@ export const Navbar = ({ transparentOnTop = false }: { transparentOnTop?: boolea
 
         <div className="hidden md:flex items-center gap-2">
           <LangSwitcher transparent={transparent} />
+          {isStaff && (
+            <Link
+              to="/dashboard"
+              className={cn(
+                "inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-smooth",
+                transparent ? "text-white bg-white/15 hover:bg-white/25" : "text-primary bg-leaf hover:opacity-90"
+              )}
+            >
+              <Shield className="h-4 w-4" /> {t("nav.recruiterSpace")}
+            </Link>
+          )}
+          {isAdmin && (
+            <Link
+              to="/admin/users"
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-smooth",
+                transparent ? "text-white/85 hover:bg-white/10" : "text-foreground/75 hover:bg-secondary"
+              )}
+            >
+              {t("nav.adminUsers")}
+            </Link>
+          )}
           {user ? (
             <>
               <Link
@@ -151,6 +174,16 @@ export const Navbar = ({ transparentOnTop = false }: { transparentOnTop?: boolea
             {user && (
               <NavLink to="/my-applications" className="px-4 py-3 rounded-xl text-sm font-medium text-foreground/80">
                 {t("nav.myApplications")}
+              </NavLink>
+            )}
+            {isStaff && (
+              <NavLink to="/dashboard" className="px-4 py-3 rounded-xl text-sm font-medium text-primary bg-leaf inline-flex items-center gap-2">
+                <Shield className="h-4 w-4" /> {t("nav.recruiterSpace")}
+              </NavLink>
+            )}
+            {isAdmin && (
+              <NavLink to="/admin/users" className="px-4 py-3 rounded-xl text-sm font-medium text-foreground/80">
+                {t("nav.adminUsers")}
               </NavLink>
             )}
             <Link to="/opportunities" className="mt-2 px-4 py-3 rounded-xl bg-canopy text-primary-foreground text-sm font-medium text-center">

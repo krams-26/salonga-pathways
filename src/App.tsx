@@ -11,7 +11,9 @@ import Organization from "./pages/Organization.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Auth from "./pages/Auth.tsx";
 import MyApplications from "./pages/MyApplications.tsx";
+import Admin from "./pages/Admin.tsx";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ProtectedRoute } from "./components/site/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -27,9 +29,31 @@ const App = () => (
             <Route path="/opportunities" element={<Opportunities />} />
             <Route path="/opportunities/:id" element={<JobDetails />} />
             <Route path="/organization" element={<Organization />} />
-            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/my-applications" element={<MyApplications />} />
+            <Route
+              path="/my-applications"
+              element={
+                <ProtectedRoute>
+                  <MyApplications />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute requiredRole="recruiter">
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <Admin />
+                </ProtectedRoute>
+              }
+            />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
