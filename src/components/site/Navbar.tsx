@@ -176,6 +176,16 @@ export const Navbar = ({ transparentOnTop = false }: { transparentOnTop?: boolea
                 {t("nav.myApplications")}
               </NavLink>
             )}
+            {isStaff && (
+              <NavLink to="/dashboard" className="px-4 py-3 rounded-xl text-sm font-medium text-primary bg-leaf inline-flex items-center gap-2">
+                <Shield className="h-4 w-4" /> {t("nav.recruiterSpace")}
+              </NavLink>
+            )}
+            {isAdmin && (
+              <NavLink to="/admin/users" className="px-4 py-3 rounded-xl text-sm font-medium text-foreground/80">
+                {t("nav.adminUsers")}
+              </NavLink>
+            )}
             <Link to="/opportunities" className="mt-2 px-4 py-3 rounded-xl bg-canopy text-primary-foreground text-sm font-medium text-center">
               {t("nav.cta")}
             </Link>
