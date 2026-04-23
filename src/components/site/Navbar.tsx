@@ -1,9 +1,10 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { Leaf, LogOut, Menu, User, X } from "lucide-react";
+import { Leaf, LogOut, Menu, Shield, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/hooks/useUserRole";
 import { LangSwitcher } from "./LangSwitcher";
 
 export const Navbar = ({ transparentOnTop = false }: { transparentOnTop?: boolean }) => {
@@ -12,12 +13,12 @@ export const Navbar = ({ transparentOnTop = false }: { transparentOnTop?: boolea
   const { pathname } = useLocation();
   const { t } = useTranslation();
   const { user, signOut } = useAuth();
+  const { isStaff, isAdmin } = useUserRole();
 
   const links = [
     { to: "/", label: t("nav.home") },
     { to: "/opportunities", label: t("nav.opportunities") },
     { to: "/organization", label: t("nav.park") },
-    { to: "/dashboard", label: t("nav.dashboard") },
   ];
 
   useEffect(() => {
