@@ -27,7 +27,8 @@ export const ProtectedRoute = ({ children, requiredRole }: Props) => {
   }
 
   if (!user) {
-    return <Navigate to={`/auth?redirect=${encodeURIComponent(location.pathname)}`} replace />;
+    const authPath = requiredRole && requiredRole !== "candidate" ? "/recruiter/login" : "/auth";
+    return <Navigate to={`${authPath}?redirect=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
   let allowed = true;

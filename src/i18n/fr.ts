@@ -165,6 +165,9 @@ export const fr = {
     signInSuccess: "Bienvenue !",
     signUpSuccess: "Compte créé. Vous êtes connecté.",
     error: "Échec de l'authentification",
+    recruiterTitle: "Espace recruteur",
+    recruiterLead: "Connexion réservée aux recruteurs et administrateurs autorisés.",
+    recruiterHelp: "Si votre compte n'a pas encore été activé par un administrateur, vous serez redirigé vers l'accueil après connexion.",
   },
   mine: {
     title: "Mes candidatures",

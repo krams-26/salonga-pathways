@@ -9,7 +9,7 @@ import Opportunities from "./pages/Opportunities.tsx";
 import JobDetails from "./pages/JobDetails.tsx";
 import Organization from "./pages/Organization.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
-import Auth from "./pages/Auth.tsx";
+import Auth, { AuthPage } from "./pages/Auth.tsx";
 import MyApplications from "./pages/MyApplications.tsx";
 import Admin from "./pages/Admin.tsx";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -30,6 +30,7 @@ const App = () => (
             <Route path="/opportunities/:id" element={<JobDetails />} />
             <Route path="/organization" element={<Organization />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/recruiter/login" element={<AuthPage portal="recruiter" />} />
             <Route
               path="/my-applications"
               element={
@@ -54,7 +55,6 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

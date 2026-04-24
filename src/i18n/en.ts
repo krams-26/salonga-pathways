@@ -165,6 +165,9 @@ export const en = {
     signInSuccess: "Welcome!",
     signUpSuccess: "Account created. You're signed in.",
     error: "Authentication failed",
+    recruiterTitle: "Recruiter space",
+    recruiterLead: "Sign in for authorized recruiters and administrators.",
+    recruiterHelp: "If your account has not been activated by an administrator yet, you will be redirected to the homepage after sign-in.",
   },
   mine: {
     title: "My applications",
