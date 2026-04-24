@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Footer } from "@/components/site/Footer";
 import { Navbar } from "@/components/site/Navbar";
 
@@ -16,11 +17,24 @@ const schema = z.object({
   fullName: z.string().trim().max(100).optional(),
 });
 
-const Auth = () => {
+type AuthPortal = "candidate" | "recruiter";
+
+type AuthPageProps = {
+  portal?: AuthPortal;
+};
+
+const getAuthCallbackPath = (portal: AuthPortal, redirectTo: string) => {
+  const params = new URLSearchParams({ redirect: redirectTo });
+  return `${portal === "recruiter" ? "/recruiter/login" : "/auth"}?${params.toString()}`;
+};
+
+export const AuthPage = ({ portal = "candidate" }: AuthPageProps) => {
   const { t } = useTranslation();
   const { user, loading } = useAuth();
+  const { isStaff, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
   const location = useLocation();
+  const isRecruiterPortal = portal === "recruiter";
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [busy, setBusy] = useState(false);
   const [email, setEmail] = useState("");
@@ -28,12 +42,29 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
 
   const search = new URLSearchParams(location.search);
-  const redirectTo =
+  const defaultRedirect = isRecruiterPortal ? "/dashboard" : "/opportunities";
+  const requestedRedirect =
     search.get("redirect") ||
-    (location.state as { from?: string })?.from ||
-    "/opportunities";
+    (location.state as { from?: string } | null)?.from ||
+    defaultRedirect;
+  const redirectTo = requestedRedirect.startsWith("/") && !requestedRedirect.startsWith("//")
+    ? requestedRedirect
+    : defaultRedirect;
 
-  if (!loading && user) return <Navigate to={redirectTo} replace />;
+  if (!loading && user && isRecruiterPortal && roleLoading) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-background">
+        <div className="text-sm text-muted-foreground">…</div>
+      </div>
+    );
+  }
+
+  if (!loading && user) {
+    if (isRecruiterPortal && !isStaff) {
+      return <Navigate to="/" replace />;
+    }
+    return <Navigate to={redirectTo} replace />;
+  }
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,9 +73,10 @@ const Auth = () => {
       toast.error(parsed.error.issues[0].message);
       return;
     }
+
     setBusy(true);
     try {
-      if (mode === "signup") {
+      if (mode === "signup" && !isRecruiterPortal) {
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -71,8 +103,9 @@ const Auth = () => {
 
   const onGoogle = async () => {
     setBusy(true);
+    const callbackPath = getAuthCallbackPath(portal, redirectTo);
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}${redirectTo}`,
+      redirect_uri: `${window.location.origin}${callbackPath}`,
     });
     if (result.error) {
       toast.error(t("auth.error"));
@@ -91,24 +124,31 @@ const Auth = () => {
                 <Leaf className="h-6 w-6 text-primary-foreground" />
               </span>
             </Link>
-            <h1 className="font-serif text-4xl text-foreground">{t("auth.title")}</h1>
+            <h1 className="font-serif text-4xl text-foreground">
+              {isRecruiterPortal ? t("auth.recruiterTitle") : t("auth.title")}
+            </h1>
+            <p className="mt-3 text-sm text-muted-foreground">
+              {isRecruiterPortal ? t("auth.recruiterLead") : t("apply.signInLead")}
+            </p>
           </div>
 
           <div className="nature-card p-7">
-            <div className="flex gap-2 mb-6 p-1 bg-secondary rounded-full">
-              <button
-                onClick={() => setMode("signin")}
-                className={`flex-1 px-4 py-2 rounded-full text-sm font-medium transition ${mode === "signin" ? "bg-canopy text-primary-foreground shadow-soft" : "text-foreground/70"}`}
-              >
-                {t("auth.signIn")}
-              </button>
-              <button
-                onClick={() => setMode("signup")}
-                className={`flex-1 px-4 py-2 rounded-full text-sm font-medium transition ${mode === "signup" ? "bg-canopy text-primary-foreground shadow-soft" : "text-foreground/70"}`}
-              >
-                {t("auth.signUp")}
-              </button>
-            </div>
+            {!isRecruiterPortal && (
+              <div className="flex gap-2 mb-6 p-1 bg-secondary rounded-full">
+                <button
+                  onClick={() => setMode("signin")}
+                  className={`flex-1 px-4 py-2 rounded-full text-sm font-medium transition ${mode === "signin" ? "bg-canopy text-primary-foreground shadow-soft" : "text-foreground/70"}`}
+                >
+                  {t("auth.signIn")}
+                </button>
+                <button
+                  onClick={() => setMode("signup")}
+                  className={`flex-1 px-4 py-2 rounded-full text-sm font-medium transition ${mode === "signup" ? "bg-canopy text-primary-foreground shadow-soft" : "text-foreground/70"}`}
+                >
+                  {t("auth.signUp")}
+                </button>
+              </div>
+            )}
 
             <button
               onClick={onGoogle}
@@ -126,7 +166,7 @@ const Auth = () => {
             </div>
 
             <form onSubmit={onSubmit} className="space-y-3">
-              {mode === "signup" && (
+              {!isRecruiterPortal && mode === "signup" && (
                 <input
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
@@ -156,9 +196,13 @@ const Auth = () => {
                 disabled={busy}
                 className="w-full px-5 py-3 rounded-xl bg-canopy text-primary-foreground font-medium hover:shadow-leaf transition-smooth disabled:opacity-50"
               >
-                {busy ? "…" : mode === "signin" ? t("auth.signIn") : t("auth.signUp")}
+                {busy ? "…" : isRecruiterPortal || mode === "signin" ? t("auth.signIn") : t("auth.signUp")}
               </button>
             </form>
+
+            {isRecruiterPortal && (
+              <p className="mt-4 text-center text-xs text-muted-foreground">{t("auth.recruiterHelp")}</p>
+            )}
           </div>
         </div>
       </section>
@@ -166,5 +210,7 @@ const Auth = () => {
     </div>
   );
 };
+
+const Auth = () => <AuthPage />;
 
 export default Auth;
